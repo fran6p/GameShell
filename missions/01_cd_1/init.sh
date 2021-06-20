@@ -1,1 +1,0 @@
-cd "$GASH_HOME"

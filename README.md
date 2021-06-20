@@ -1,224 +1,87 @@
-# GameShell : un "jeu" pour apprendre le shell
-
-
-GameShell (gash) est le résultat d'une réflexion sur comment enseigner les
-rudiments (et un peu plus) du shell à des étudiants en première année à
-l'université Savoie Mont Blanc.
-
-L'idée initiale, due à Rodolphe Lepigre, était de lancer un shell bash avec un
-fichier de configuration qui permettait d'effectuer des "missions", qui
-seraient "validées" pour avancer.
-
-N'hésitez pas à m'envoyer vos remarques, questions ou suggestions autour de
-GameShell. En particulier, je suis preneur de nouvelles missions !
-
-
-GameShell est soumis à la licence GPLv3 https://www.gnu.org/licenses/gpl-3.0.en.html
-
-### Prérequis
-
-GameShell devrait (??) fonctionner sur un système Linux standard. Pour
-Debian/Ubuntu, il faut avoir les paquets suivants :
-
-  - psmisc
-  - nano
-  - tree
-  - x11-apps
-  - bsdmainutils (pour la mission 12)
-  - python3 (pour générer la mission 33, mais conseillé de toute façon)
-
-
-Pour macOS, il faut installer ``coreutils`` et ``md5sha1sum``. Le plus simple
-est d'utiliser le gestionnaire de paquets [homebrew](https://brew.sh/index_fr) :
-
-    $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
-puis d'installer les paquets nécessaires avec
-
-    $ brew install coreutils
-    $ brew install md5sha1sum
-
-
-### contact
-
-Pierre Hyvernat
-
-http://www.lama.univ-smb.fr/~hyvernat
-
-pierre.hyvernat@univ-smb.fr
-
-
-
-Utilisation
------------
-
-### 1/ directement depuis les sources
-
-En récupérant l'archive du dépot
-
-    $ rm -rf GameShell && mkdir GameShell && wget  https://api.github.com/repos/phyver/GameShell/tarball -O -  |  tar -xz -C GameShell --strip-components 1
-    $ ./phyver-GameShell-*/start.sh
-
-ou, si votre version de `tar` ne supporte pas l'option `--strip-components`
-
-    $ rm -rf phyver-GameShell-* && wget  https://api.github.com/repos/phyver/GameShell/tarball -O -  |  tar -xz
-    $ ./phyver-GameShell-*/start.sh
-    ...
-    ...
-
-
-### 2/ directement depuis les sources
-
-Après avoir cloné le dépot :
-
-    $ git clone https://github.com/phyver/GameShell.git
-    $ ./GameShell/start.sh -F
-    ...
-    ...
-
-
-### 3/ en créant une archive spécifique
-
-Après avoir cloné le dépot :
-
-    $ cd GameShell
-    $ ./bin/archive.sh -M"*find*"
-    copie des missions choisies
-        /export/home/hyvernat/src/Shell/GameShell/missions/20_find_1  --> 01_find_1
-        /export/home/hyvernat/src/Shell/GameShell/missions/31_find_2  --> 02_find_2
-        /export/home/hyvernat/src/Shell/GameShell/missions/32_find_3_xargs -->  03_find_3_xargs
-    suppression des scripts 'auto.sh' des missions
-    choix du mode de lancement
-    création de l'archive
-    suppression du répertoire temporaire
-    $ ls
-    GameShell.tgz  README  World/  bin/  doc/  lib/  missions/  start.sh*
-
-Le fichier `GameShell.tgz` contient une instance de GameShell avec uniquement
-les 3 missions autour de la commande ``find``.
-
-On peut maintenant copier cette archive n'importe où et lancer le jeu:
-
-    $ mv GameShell.tgz /tmp
-    $ cd /tmp
-    $ tar -xf GameShell.tar
-    $ ./GameShell/start.sh
-    ...
-    ...
-
-
-### 4/ en créant et utilisant une image Docker
-
-L'idée de GameShell est d'avoir une session "la plus proche possible" d'une
-session shell "standard". Je l'utilise donc sur des machines Linux "standard",
-ou sur une machine virtuelle.
-
-Il est possible de créer une image Docker en utilisant le fichier `Dockerfile`
-fourni pour lancer GameShell sans s'occuper des dépendances :
-
-Création de l'image :
-
-    $ docker build -t gash .
-
-Lancement de l'image, si vous avez un serveur X :
-
-    host +"local:docker@" \
-    && docker run -it \
-         -e DISPLAY=${DISPLAY} \
-         -v /tmp/.X11-unix:/tmp/.X11-unix \
-         gash
-
-Lancement de l'image, sans serveur X :
-
-    docker run -it gash
-
-
-Commandes de base
------------------
-
-GameShell est simplement une instance de bash avec des fonctions
-supplémentaires. Ces fonctionnalités passent par la commande ``gash``.
-
-  - `gash help` : affiche une petite liste des commandes
-  - `gash HELP` : affiche une liste plus complète des commandes
-  - `gash show` : affiche l'objectif de la mission courante
-  - `gash check` : vérifie si la mission actuelle est validée
-  - `gash reset` : recommence la mission courante
-
-
-
-Ajout de mission
-----------------
-
-Chaque mission est contenue dans un répertoire dédié et peut fournir les
-fichiers suivants
-
-  - `bashrc`
-        fichier ajouté à la configuration globale de la session utilisé pour
-        la partie
-        Ce fichier peut contenir des variables, aliases, etc. qui seront
-        disponibles pendant toute la partie.
-        (fichier bash, facultatif)
-
-  - `static.sh`
-        fichier lu par bash __au lancement de GameShell__. C'est par exemple
-        dans ce fichier que l'on peut créer des répertoires qui existeront pour
-        toutes les missions.
-        Remarque : ce fichier est lu par bash (``source static.sh``) et peut
-        donc par exemple définir des variables d'environnement.
-
-  - `bin`
-        répertoire contenant des exécutables utilisés pendant la partie
-        Les fichiers contenus dans ce répertoire sont recopiés dans un
-        répertoire caché `$GASH_HOME/.bin`, qui est ajouté au `PATH` global.
-        (répertoire, facultatif)
-
-  - `deps.sh`
-        pour vérifier si le système contient les dépendances de la mission Il
-        doit renvoyer `0` si les dépendances sont satisfaites, et une valeur
-        non nulle sinon.
-        Remarque : ce fichier est lancé au début de la mission, et en cas de
-        dépendance non satisfaite, la mission est annulée.
-        (fichier bash, facultatif)
-
-  - `init.sh`
-        fichier lu par bash __au lancement de la mission__. C'est par exemple
-        dans ce fichier qu'on peut (re)générer des parties dynamiques de la
-        mission.
-        Remarque : ce fichier est lu (`source init.sh`) et peut donc
-        créer des variables d'environnement.
-        (fichier bash, facultatif)
-
-  - `goal.txt`
-        petite description de la mission, affichée par ``gash show``
-        (fichier texte, obligatoire)
-
-  - `check.sh`
-        fichier lu par bash pour vérifier que la mission est validée.
-        Remarque : ce fichier est lu par bash (``source check.sh``) et __doit
-        se terminer__ par une commande renvoyant la valeur 0 (typiquement,
-        ``true``) en cas de succès, et par une commande renvoyant une valeur
-        différente de 0 (typiquement ``false``) en cas d'échec.
-        (fichier bash, obligatoire)
-
-  - `treasure.sh`
-        fichier bash lu par bash après validation de la mission. Cela permet
-        d'ajouter des fonctionnalités comme "récompense" à certaines missions.
-        (fichier bash, facultatif)
-
-  - `treasure.txt`
-        fichier texte affiché par bash après validation de la mission
-        (fichier texte, facultatif)
-
-  - `auto.sh`
-        fichier lu par bash pour valider automatiquement la mission
-        Remarque : ce fichier est lu par bash (``source auto.sh``).
-        (fichier bash, facultatif)
-
-
-
-Contributeurs missions
-----------------------
+GameShell: a "game" to teach the Unix shell
+===========================================
+
+![Illustration inspired by the game](art/illustration-small.png)
+
+Teaching first-year university students or high schoolers to use a Unix shell
+is not always the easiest or most entertaining of tasks. GameShell was devised
+as a tool to help students at the
+[Université Savoie Mont Blanc](https://univ-smb.fr) to engage with a *real*
+shell, in a way that encourages learning while also having fun. 
+
+The original idea, due to Rodolphe Lepigre, was to run a standard bash session
+with an appropriate configuration file that defined "missions" which would be
+"checked" in order to progress through the game.
+
+Here is the result...
+
+Feel free to send us your remarks, questions or suggestions by opening
+[issues](https://github.com/phyver/GameShell/issues) or submitting
+[pull requests](https://github.com/phyver/GameShell/pulls).
+We are particularly interested in any new missions you might create!
+
+
+Getting started
+---------------
+
+**Note:** GameShell is currently undergoing heavy development: the current
+version has not been field tested by students. Do not hesitate to report any
+problems you might encounter or suggestions you might have by
+[opening an issue](https://github.com/phyver/GameShell/issues/new).
+
+GameShell should work on any standard Linux system, and also on macOS and BSD
+(but we have run fewer tests on the latter systems). On Debian or Ubuntu, the
+only dependencies (besides `bash`) are the `gettext-base` and `awk` packages
+(the latter is generally installed by default). Some missions have additional
+dependencies: these missions will be skipped if the dependencies are not met.
+On Debian or Ubuntu, run the following command to install all game and mission
+dependencies.
+```sh
+$ sudo apt install gettext-base man-db psmisc nano tree bsdmainutils x11-apps gettext
+```
+Check the [user manual](doc/user_manual.md) to see how to install the game
+dependencies on other systems (macOS, BSD, ...).
+
+Assuming all the dependencies are installed, you can try the latest version of
+the game by running the following two commands in a terminal.
+```sh
+$ wget https://github.com/phyver/GameShell/releases/download/latest/GameShell.sh
+$ bash GameShell.sh
+```
+The first command will download the latest version of the game in the form of
+a self-extracting archive, and the second command will initialise and run the
+game from the downloaded archive. Instructions on how to play are provided in
+the game directly.
+
+Note that when you quit the game (with `control-d` or the command `gsh exit`)
+your progression will be saved in a new archive (called `GameShell-save.sh`).
+Run this archive to resume the game where you left it.
+
+
+Documentation
+-------------
+
+To find out more about GameShell, refer to the following documents:
+- The [user manual](doc/user_manual.md) provides information on how to run the
+  game on all supported platforms (Linux, macOS, BSD), explains how to run the
+  game from the sources, tells you how to generate custom game archives (which
+  is useful if you want to use GameShell for teaching a class), and more.
+- The [developer manual](doc/dev_manual.md) provides information on how to
+  create new missions, how to translate missions, and how to participate
+  in the development of the game.
+
+
+Who is developing GameShell?
+----------------------------
+
+### Developers
+
+The game is currently being developed by:
+* [Pierre Hyvernat](http://www.lama.univ-smb.fr/~hyvernat) (main developer,
+  [pierre.hyvernat@univ-smb.fr](mailto:pierre.hyvernat@univ-smb.fr)),
+* [Rodolphe Lepigre](https://lepigre.fr).
+
+### Mission contributors
 
 * Pierre Hyvernat
 * Rodolphe Lepigre
@@ -228,10 +91,16 @@ Contributeurs missions
 * Sébastien Tavenas
 * Tiemen Duvillard
 
+### Special thanks
+
+* All the students who found *many* bugs in the early versions.
+* Joan Stark (a.k.a, jgs), who designed hundreds of ASCII-art pieces in the
+  late 90s. Most of the ASCII-art encountered in GameShell are due to her.
+
 
 Licence
 -------
 
-Ce code est distribué sous licence GPL.
+GameShell is released under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
-Merci de pointer vers ce dépôt si vous l'utilisez.
+Please link to this repository if you use GameShell.

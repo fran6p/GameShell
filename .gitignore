@@ -1,9 +1,14 @@
 tmp
 TODO
-GameShell.tgz
 .bin
+.sbin
 .config
-.session_data
-.tmp
+.var
 World
-*.tar
+locale/
+*~
+gameshell.sh
+gameshell-save.sh
+gameshell.tgz
+boxes-data.awk
+game shell*
