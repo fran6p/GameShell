@@ -75,6 +75,9 @@ msgid_plural    "%d missions skipped:"
 msgstr[0]       "%d mission skipped:"
 msgstr[1]       "%d missions skipped:"
 
+msgid   "AUTOMATICALLY GENERATED ON STARTUP -- DO NOT MODIFY"
+msgstr  "AUTOMATICALLY GENERATED ON STARTUP -- DO NOT MODIFY"
+
 #, sh-format
 msgid   "Congratulations, mission $MISSION_NB has been successfully completed!"
 msgstr  "Congratulations, mission $MISSION_NB has been successfully completed!"
@@ -135,8 +138,14 @@ msgid   "Error: unknown gsh command '$cmd'.\n"
 msgstr  "Error: unknown gsh command '$cmd'.\n"
         "Use one of the following commands:"
 
-msgid   "Error: wrong password"
-msgstr  "Error: wrong password"
+#, sh-format
+msgid   "Error: unknown shell '$SHELL'.\n"
+        "Use option -B to use bash, and option -Z to use zsh."
+msgstr  "Error: unknown shell '$SHELL'.\n"
+        "Use option -B to use bash, and option -Z to use zsh."
+
+msgid   "Error: wrong password."
+msgstr  "Error: wrong password."
 
 msgid   "Error: you are not allowed to run this command."
 msgstr  "Error: you are not allowed to run this command."
@@ -161,6 +170,9 @@ msgstr  "Player's name:"
 msgid   "Press Enter to continue."
 msgstr  "Press Enter to continue."
 
+msgid   "START OF COMMANDS HISTORY"
+msgstr  "START OF COMMANDS HISTORY"
+
 #, sh-format
 msgid   "Sorry, mission $MISSION_NB hasn't been completed."
 msgstr  "Sorry, mission $MISSION_NB hasn't been completed."
@@ -174,12 +186,12 @@ msgstr  "The directory $GSH_CONFIG contains meta-data from a previous game.\n"
 msgid   "There are stopped jobs in your session.\n"
         "Those processes will be terminated.\n"
         "You can get the list of those jobs with\n"
-        "    $ jobs -s\n"
+        "    $ jobs\n"
         "Do you still want to quit? [y/n]"
 msgstr  "There are stopped jobs in your session.\n"
         "Those processes will be terminated.\n"
         "You can get the list of those jobs with\n"
-        "    $ jobs -s\n"
+        "    $ jobs\n"
         "Do you still want to quit? [y/n]"
 
 msgid   "Warning: the file 'treasure.sh' was sourced from a subshell.\n"
@@ -235,11 +247,17 @@ msgstr  "While you are waiting, you see a fish swimming in circles..."
 msgid   "Y"
 msgstr  "Y"
 
+msgid   "[Press space to continue, q to quit\\.]"
+msgstr  "[Press space to continue, q to quit\\.]"
+
 msgid   "cancelled"
 msgstr  "cancelled"
 
 msgid   "completed"
 msgstr  "completed"
+
+msgid   "days"
+msgstr  "days"
 
 msgid   "failed"
 msgstr  "failed"

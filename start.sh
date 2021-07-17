@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # warning about "echo $(cmd)", used many times with echo "$(gettext ...)"
 # shellcheck disable=SC2005
@@ -13,10 +13,10 @@
 # warning about declaring and initializing at the same time: local x=...
 # shellcheck disable=SC2155
 
-# shellcheck source=/dev/null
-. gettext.sh
 
 export GSH_ROOT="$(dirname "$0")"
+# shellcheck source=scripts/gsh_gettext.sh
+. "$GSH_ROOT/scripts/gsh_gettext.sh"
 # shellcheck source=lib/profile.sh
 . "$GSH_ROOT/lib/profile.sh"
 # shellcheck source=lib/mission_source.sh
@@ -30,7 +30,7 @@ display_help() {
 export GSH_COLOR="OK"
 GSH_MODE="ANONYMOUS"
 RESET=""
-while getopts ":hcnPdDACRXqL:K" opt
+while getopts ":hnPdDACRXqL:KBZc:" opt
 do
   case $opt in
     h)
@@ -39,9 +39,6 @@ do
       ;;
     n)
       GSH_COLOR=""
-      ;;
-    c)
-      GSH_COLOR="OK"
       ;;
     P)
       GSH_MODE="PASSPORT"
@@ -66,24 +63,20 @@ do
       RESET="TRUE"
       ;;
     L)
-      if locale | grep "LANGUAGE" >/dev/null
-      then
-        export LANGUAGE=$OPTARG
-      else
-        if locale -a | grep -qx "$OPTARG"
-        then
-          export LC_MESSAGES=$OPTARG
-        else
-          echo "Unknown locale: '$OPTARG'." >&2
-          echo "You can run 'locale -a' to get a list of all locales installed on your system." >&2
-          locale -a | grep "$OPTARG" && echo "The above locales might be relevant..." >&2
-          exit 1
-        fi
-      fi
+      export LANGUAGE="$OPTARG"     # only works on GNU systems
       ;;
     X)
       echo "$(gettext "Error: this option is only available from an executable archive!")" >&2
       exit 1
+      ;;
+    B)
+      export GSH_SHELL=bash
+      ;;
+    Z)
+      export GSH_SHELL=zsh
+      ;;
+    c)
+      GSH_COMMAND=$OPTARG
       ;;
     K)
       :  # used by the self-extracting archive
@@ -95,6 +88,24 @@ do
   esac
 done
 shift $((OPTIND - 1))
+
+# check we have a shell compatible with GameShell
+if [ -z "$GSH_SHELL" ]
+then
+  case "$SHELL" in
+    *bash)
+      export GSH_SHELL=$SHELL
+      ;;
+    *zsh)
+      export GSH_SHELL=$SHELL
+      ;;
+    *)
+      echo "$(eval_gettext "Error: unknown shell '\$SHELL'.
+Use option -B to use bash, and option -Z to use zsh.")" >&2
+      exit 1
+      ;;
+  esac
+fi
 
 
 _passport() {
@@ -186,7 +197,8 @@ Do you want to remove it and start a new game? [y/N]') "
   # hide cursor and disable echoing of keystrokes
   tput civis 2>/dev/null
   stty -echo 2>/dev/null
-  trap "tput cnorm 2>/dev/null; stty echo 2>/dev/null; echo" INT TERM
+  # those traps will be redefined in lib/gsh.sh
+  trap "tput cnorm 2>/dev/null; stty echo 2>/dev/null; echo" INT TERM EXIT
 
 
   # remove all the game data
@@ -198,16 +210,13 @@ Do you want to remove it and start a new game? [y/N]') "
 
   # recreate them
   mkdir -p "$GSH_HOME"
-  # change the HOME dir, but save the "real" one in a variable
-  export REAL_HOME="$HOME"
-  export HOME="$GSH_HOME"
 
   mkdir -p "$GSH_CONFIG"
   awk -v seed_file="$GSH_CONFIG/PRNG_seed" 'BEGIN { srand(); printf("%s", int(2^32 * rand())) > seed_file; }'
   cp "$GSH_LIB/gshrc" "$GSH_CONFIG"
 
   # save current locale
-  locale | sed -e "s/^/export /" > "$GSH_CONFIG"/config.sh
+  locale > "$GSH_CONFIG"/config.sh
   echo "export GSH_MODE=$GSH_MODE" >> "$GSH_CONFIG"/config.sh
   # TODO save other config (color ?)
 
@@ -216,10 +225,7 @@ Do you want to remove it and start a new game? [y/N]') "
 
   mkdir -p "$GSH_BIN"
   mkdir -p "$GSH_SBIN"
-
   mkdir -p "$GSH_TMP"
-  export TMPDIR="$GSH_TMP"
-
 
   # id of player
   PASSPORT="$GSH_CONFIG/passport.txt"
@@ -256,12 +262,27 @@ Do you want to remove it and start a new game? [y/N]') "
   # save system config, in case of problems
   _gsh_systemconfig > "$GSH_CONFIG/system"
 
+  ### generate GameShell translation files
+  # NOTE: nullglob don't expand in POSIX sh and there is no shopt -s nullglob as in bash
+  if [ -z "$GSH_NO_GETTEXT" ] && command -v msgfmt >/dev/null && [ -n "$(find "$GSH_ROOT/i18n" -maxdepth 1 -name '*.po' | head -n1)" ]
+  then
+    for PO_FILE in "$GSH_ROOT"/i18n/*.po; do
+      PO_LANG=$(basename "$PO_FILE" .po)
+      MO_FILE="$GSH_ROOT/locale/$PO_LANG/LC_MESSAGES/$TEXTDOMAIN.mo"
+      if ! [ -f "$MO_FILE" ] || [ "$PO_FILE" -nt "$MO_FILE" ]
+      then
+        mkdir -p "$GSH_ROOT/locale/$PO_LANG/LC_MESSAGES"
+        msgfmt -o "$GSH_ROOT/locale/$PO_LANG/LC_MESSAGES/$TEXTDOMAIN.mo" "$PO_FILE"
+      fi
+    done
+  fi
 
   # Clear the screen.
   if [ "$GSH_MODE" = "DEBUG" ]
   then
     printf "[MISSION INITIALISATION]" >&2
-  else
+  elif [ -z "$GSH_QUIET_INTRO" ]
+  then
     clear
   fi
 
@@ -269,7 +290,6 @@ Do you want to remove it and start a new game? [y/N]') "
 
   if [ "$GSH_MODE" != "DEBUG" ]
   then
-    echo
     cat "$GSH_LIB/ascii-art/GameShell.txt"
     echo
   fi
@@ -306,7 +326,7 @@ Do you want to remove it and start a new game? [y/N]') "
     export DOMAIN=$(textdomainname "$MISSION_DIR")
 
     # Preparing the locales
-    if [ -d "$MISSION_DIR/i18n" ]
+    if [ -z "$GSH_NO_GETTEXT" ] && command -v msgfmt >/dev/null && [ -d "$MISSION_DIR/i18n" ]
     then
       # NOTE: shopt -s nullglob doesn't exist in POSIX sh
       if [ -n "$(find "$MISSION_DIR/i18n" -maxdepth 1 -name '*.po' | head -n1)" ]
@@ -354,14 +374,14 @@ Do you want to remove it and start a new game? [y/N]') "
     # copy all the shell config files of the mission
     if [ -f "$MISSION_DIR/gshrc" ]
     then
-      BASHRC_FILE=$GSH_CONFIG/gshrc_${FULL_NB}_$(basename "$MISSION_DIR").sh
+      GSHRC_FILE=$GSH_CONFIG/gshrc_${FULL_NB}_$(basename "$MISSION_DIR").sh
       {
         echo "export MISSION_DIR=\"$MISSION_DIR\"";
         echo "export TEXTDOMAIN=\"$DOMAIN\"";
-      } >"$BASHRC_FILE"
-      cat "$MISSION_DIR/gshrc" >> "$BASHRC_FILE"
-      echo "export TEXTDOMAIN=gsh" >> "$BASHRC_FILE"
-      unset BASHRC_FILE
+      } >"$GSHRC_FILE"
+      cat "$MISSION_DIR/gshrc" >> "$GSHRC_FILE"
+      echo "export TEXTDOMAIN=gsh" >> "$GSHRC_FILE"
+      unset GSHRC_FILE
     fi
 
     if [ "$GSH_MODE" = "DEBUG" ] && [ "$GSH_VERBOSE_DEBUG" = true ]
@@ -380,7 +400,7 @@ Do you want to remove it and start a new game? [y/N]') "
   if [ "$MISSION_NB" -eq 1 ]
   then
     echo "$(gettext "Error: no mission was found!
-Aborting.")"
+Aborting.")" >&2
     exit 1
   fi
   if [ "$GSH_MODE" = "DEBUG" ]
@@ -390,12 +410,17 @@ Aborting.")"
     progress_finish
     # show cursor back
     tput cnorm 2>/dev/null
-    echo
-    printf "$(gettext "Press Enter to continue.")"
-    stty -echo 2>/dev/null    # ignore errors, in case input comes from a redirection
-    read
-    stty echo 2>/dev/null    # ignore errors, in case input comes from a redirection
-    clear
+    if [ -z "$GSH_QUIET_INTRO" ]
+    then
+      echo
+      printf "$(gettext "Press Enter to continue.")"
+      stty -echo 2>/dev/null    # ignore errors, in case input comes from a redirection
+      read
+      stty echo 2>/dev/null    # ignore errors, in case input comes from a redirection
+      clear
+    else
+      echo
+    fi
   fi
   unset MISSION_DIR MISSION_NB
 
@@ -407,10 +432,60 @@ Aborting.")"
 #######################################################################
 
 init_gsh "$@"
+
+# change the HOME dir, but save the "real" one in a variable
+export REAL_HOME="$HOME"
+export HOME="$GSH_HOME"
+
+# set TMPDIR, that may be used by external scripts like mktemp
+export TMPDIR="$GSH_TMP"
+
+
+### test some of the scripts
+if ! sh "$GSH_ROOT/lib/bin_test.sh"
+then
+  echo "$(gettext "Error: a least one base function is not working properly.
+Aborting!")"
+  exit 1
+fi
+
 cd "$GSH_HOME"
 export GSH_UID=$(cat "$GSH_CONFIG/uid")
 date "+%Y-%m-%d %H:%M:%S" | sed 's/^/#>>> /' >> "$GSH_CONFIG/missions.log"
-# make sure the shell reads it's config file by making it interactive (-i)
-exec bash --rcfile "$GSH_LIB/gshrc" -i
+
+# make sure the shell reads its config file by making it interactive (-i)
+generate_rcfile
+if [ -n "$GSH_COMMAND" ]
+then
+  # NOTE, with "-c", environment isn't inherited by bash / zsh
+  # we need to re-source profile.sh
+  # exec $GSH_SHELL -i -c "GSH_ROOT=\"$GSH_ROOT\"
+  #                        . \"\$GSH_ROOT/lib/profile.sh\"
+  #                        $GSH_COMMAND"
+
+  # NOTE, the above works in bash, but when running the following script with
+  # GSH_SHELL=zsh, it fails with "zsh: suspended (tty output)"
+  # ======== script =======
+  # #!/bin/sh
+  # ./gameshell.sh -qc "gsh exit"; ./gameshell.sh -qc "gsh exit"
+  # =======================
+  # FIX: don't start the shell in interactive mode, and source the rcfile
+  # explicitly
+  case "$GSH_SHELL" in
+    *bash)
+      RC_FILE=.bashrc
+      ;;
+    *zsh)
+      RC_FILE=.zshrc
+      ;;
+  esac
+  exec $GSH_SHELL -c "export GSH_NON_INTERACTIVE=1
+                       GSH_ROOT=\"$GSH_ROOT\"
+                       . \"\$GSH_ROOT/lib/profile.sh\"
+                       . \"\$GSH_HOME/$RC_FILE\"
+                       $GSH_COMMAND"
+else
+  exec $GSH_SHELL
+fi
 
 # vim: shiftwidth=2 tabstop=2 softtabstop=2

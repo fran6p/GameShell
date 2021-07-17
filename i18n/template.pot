@@ -74,6 +74,9 @@ msgid_plural    "%d missions skipped:"
 msgstr[0]       ""
 msgstr[1]       ""
 
+msgid   "AUTOMATICALLY GENERATED ON STARTUP -- DO NOT MODIFY"
+msgstr  ""
+
 #, sh-format
 msgid   "Congratulations, mission $MISSION_NB has been successfully completed!"
 msgstr  ""
@@ -131,7 +134,12 @@ msgid   "Error: unknown gsh command '$cmd'.\n"
         "Use one of the following commands:"
 msgstr  ""
 
-msgid   "Error: wrong password"
+#, sh-format
+msgid   "Error: unknown shell '$SHELL'.\n"
+        "Use option -B to use bash, and option -Z to use zsh."
+msgstr  ""
+
+msgid   "Error: wrong password."
 msgstr  ""
 
 msgid   "Error: you are not allowed to run this command."
@@ -157,6 +165,9 @@ msgstr  ""
 msgid   "Press Enter to continue."
 msgstr  ""
 
+msgid   "START OF COMMANDS HISTORY"
+msgstr  ""
+
 #, sh-format
 msgid   "Sorry, mission $MISSION_NB hasn't been completed."
 msgstr  ""
@@ -169,7 +180,7 @@ msgstr  ""
 msgid   "There are stopped jobs in your session.\n"
         "Those processes will be terminated.\n"
         "You can get the list of those jobs with\n"
-        "    $ jobs -s\n"
+        "    $ jobs\n"
         "Do you still want to quit? [y/n]"
 msgstr  ""
 
@@ -221,10 +232,16 @@ msgstr  ""
 msgid   "Y"
 msgstr  ""
 
+msgid   "[Press space to continue, q to quit\\.]"
+msgstr  ""
+
 msgid   "cancelled"
 msgstr  ""
 
 msgid   "completed"
+msgstr  ""
+
+msgid   "days"
 msgstr  ""
 
 msgid   "failed"

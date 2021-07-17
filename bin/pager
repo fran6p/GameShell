@@ -1,9 +1,0 @@
-#!/bin/sh
-
-if command -v less > /dev/null 2>&1
-then
-  less -rEX "$@"
-else
-  more "$@"
-fi
-

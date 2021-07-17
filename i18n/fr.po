@@ -74,6 +74,9 @@ msgid_plural    "%d missions skipped:"
 msgstr[0]       "%d mission réussie :"
 msgstr[1]       "%d missions réussies :"
 
+msgid   "AUTOMATICALLY GENERATED ON STARTUP -- DO NOT MODIFY"
+msgstr  "AUTOMATIQUEMENT GÉNÉRÉ AU DÉMARRAGE -- NE PAS MODIFIER"
+
 #, sh-format
 msgid   "Congratulations, mission $MISSION_NB has been successfully completed!"
 msgstr  "Bravo, vous avez réussi la mission $MISSION_NB !"
@@ -134,8 +137,14 @@ msgid   "Error: unknown gsh command '$cmd'.\n"
 msgstr  "Erreur : command gsh inconnue '$cmd'.\n"
         "Utilisez une des commandes suivantes :"
 
-msgid   "Error: wrong password"
-msgstr  "Erreur : mauvais mot de passe"
+#, sh-format
+msgid   "Error: unknown shell '$SHELL'.\n"
+        "Use option -B to use bash, and option -Z to use zsh."
+msgstr  "Erreur : shell inconnu '$SHELL'.\n"
+        "Utilisez l'option -B utiliser bash, et l'option -Z pour utiliser zsh."
+
+msgid   "Error: wrong password."
+msgstr  "Erreur : mauvais mot de passe."
 
 msgid   "Error: you are not allowed to run this command."
 msgstr  "Erreur : vous n'avez pas le droit d'exécuter cette commande."
@@ -160,6 +169,9 @@ msgstr  "Nom du joueur :"
 msgid   "Press Enter to continue."
 msgstr  "Appuyez sur Entrée pour continuer."
 
+msgid   "START OF COMMANDS HISTORY"
+msgstr  "DÉBUT DE L'HISTORIQUE DES COMMANDES"
+
 #, sh-format
 msgid   "Sorry, mission $MISSION_NB hasn't been completed."
 msgstr  "Désolé, la mission $MISSION_NB a échoué."
@@ -173,18 +185,18 @@ msgstr  "Le répertoire $GSH_CONFIG contient des méta-données provenant d'une 
 msgid   "There are stopped jobs in your session.\n"
         "Those processes will be terminated.\n"
         "You can get the list of those jobs with\n"
-        "    $ jobs -s\n"
+        "    $ jobs\n"
         "Do you still want to quit? [y/n]"
 msgstr  "Il y a des processus stoppés dans votre session.\n"
         "Ces processus vont être arêtés.\n"
         "Vous pouvez obtenir la liste de ces processus avec\n"
-        "    $ jobs -s\n"
+        "    $ jobs\n"
         "Êtes vous sûr de vouloir quitter ? [o/N]"
 
 msgid   "Warning: the file 'treasure.sh' was sourced from a subshell.\n"
         "You should use the command\n"
         "  $ gsh reset"
-msgstr  "Warning : le fichier 'treasure.sh' a été chargé dans un sous-shell.\n"
+msgstr  "Attention : le fichier 'treasure.sh' a été chargé dans un sous-shell.\n"
         "Vous devriez lancer la commande\n"
         "  $ gsh reset"
 
@@ -192,7 +204,7 @@ msgid   "Warning: this mission was initialized in a subshell.\n"
         "Run the command\n"
         "    $ gsh reset\n"
         "to make sure the mission is initialized properly."
-msgstr  "Avertissement : cette mission a été initialisée dans un sous-shell.\n"
+msgstr  "Attention : cette mission a été initialisée dans un sous-shell.\n"
         "Lancez la commande\n"
         "    $ gsh reset\n"
         "pour qu'elle soit initialisée correctement."
@@ -234,11 +246,17 @@ msgstr  "Pendant que vous attendez, un poisson fait des ronds..."
 msgid   "Y"
 msgstr  "O"
 
+msgid   "[Press space to continue, q to quit\\.]"
+msgstr  "[Appuyer sur la barre d'espace pour continuer, 'q' pour quitter\\.]"
+
 msgid   "cancelled"
 msgstr  "annulée"
 
 msgid   "completed"
 msgstr  "réussie"
+
+msgid   "days"
+msgstr  "jours"
 
 msgid   "failed"
 msgstr  "échouée"
