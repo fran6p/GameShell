@@ -1,4 +1,3 @@
-#, fuzzy
 msgid   ""
 msgstr  "Content-Type: text/plain; charset=UTF-8\n"
         "Content-Transfer-Encoding: 8bit\n"
@@ -30,6 +29,10 @@ msgstr  "$GSH_ROOT/i18n/start-help/fr.txt"
 
 #, sh-format
 msgid   "$MISSION_DIR/goal/en.txt"
+msgstr  "$MISSION_DIR/goal/fr.txt"
+
+#, sh-format
+msgid   "$MISSION_DIR/skip/en.txt"
 msgstr  "$MISSION_DIR/goal/fr.txt"
 
 #, sh-format
@@ -139,15 +142,18 @@ msgstr  "Erreur : command gsh inconnue '$cmd'.\n"
 
 #, sh-format
 msgid   "Error: unknown shell '$SHELL'.\n"
-        "Use option -B to use bash, and option -Z to use zsh."
+        "Run GameShell with either bash or zsh."
 msgstr  "Erreur : shell inconnu '$SHELL'.\n"
-        "Utilisez l'option -B utiliser bash, et l'option -Z pour utiliser zsh."
+        "Lancez GameShell depuis bash ou zsh."
 
 msgid   "Error: wrong password."
 msgstr  "Erreur : mauvais mot de passe."
 
 msgid   "Error: you are not allowed to run this command."
 msgstr  "Erreur : vous n'avez pas le droit d'exécuter cette commande."
+
+msgid   "Error: you shouldn't run Gameshell as root!"
+msgstr  "Erreur: il ne faut pas lancer Gameshell avec l'utilisateur root !"
 
 msgid   "Is this information correct? [Y/n]"
 msgstr  "Est-ce que ces informations sont correctes ? [O/n]"
@@ -181,6 +187,9 @@ msgid   "The directory $GSH_CONFIG contains meta-data from a previous game.\n"
         "Do you want to remove it and start a new game? [y/N]"
 msgstr  "Le répertoire $GSH_CONFIG contient des méta-données provenant d'une partie précédente.\n"
         "Voulez vous les supprimer et commencer une nouvelle partie ? [o/N]"
+
+msgid   "The latest version of Gameshell is available at"
+msgstr  "La dernière version de Gameshell is disponible sur"
 
 msgid   "There are stopped jobs in your session.\n"
         "Those processes will be terminated.\n"
@@ -245,6 +254,10 @@ msgstr  "Pendant que vous attendez, un poisson fait des ronds..."
 # abbreviation for "yes" (uppercase)
 msgid   "Y"
 msgstr  "O"
+
+#, fuzzy
+msgid   "You shouldn't run Gameshell as root!"
+msgstr  "Erreur: il ne faut pas lancer Gameshell avec l'utilisateur root !"
 
 msgid   "[Press space to continue, q to quit\\.]"
 msgstr  "[Appuyer sur la barre d'espace pour continuer, 'q' pour quitter\\.]"
