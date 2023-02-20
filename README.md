@@ -1,7 +1,7 @@
 GameShell: a "game" to teach the Unix shell
 ===========================================
 
-![Illustration inspired by the game](art/illustration-small.png)
+![Illustration inspired by the game](Images/illustration-small.png)
 
 Teaching first-year university students or high schoolers to use a Unix shell
 is not always the easiest or most entertaining of tasks. GameShell was devised
@@ -14,6 +14,12 @@ with an appropriate configuration file that defined "missions" which would be
 "checked" in order to progress through the game.
 
 Here is the result...
+
+![GameShell's first mission](Images/gameshell_first_mission_small.gif)
+
+
+GameShell is available in English, French and Italian.
+
 
 Feel free to send us your remarks, questions or suggestions by opening
 [issues](https://github.com/phyver/GameShell/issues) or submitting
@@ -54,7 +60,7 @@ game from the downloaded archive. Instructions on how to play are provided in
 the game directly.
 
 Note that when you quit the game (with `control-d` or the command `gsh exit`)
-your progression will be saved in a new archive (called `GameShell-save.sh`).
+your progression will be saved in a new archive (called `gameshell-save.sh`).
 Run this archive to resume the game where you left it.
 
 
@@ -104,6 +110,23 @@ The game is currently being developed by:
 * Clovis Eberhart
 * Sébastien Tavenas
 * Tiemen Duvillard
+
+### Translation
+
+#### Italian Version
+
+* Daniele Scasciafratte (@mte90)
+* Paolo Mauri (@maupao)
+* Marco Ciampa (@ciampix)
+* Antonio Vivace (@avivace)
+* Lorenzo Millucci (@lmillucci)
+* Sirio Negri (@ziriuz84)
+* Domenico Mammola (@domenicomammola)
+* Leonardo Canello (@anulo2)
+* @michirod
+* @serhack
+* WhiteShield (@wshield05)
+* @gioisco
 
 ### Special thanks
 

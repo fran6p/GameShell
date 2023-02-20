@@ -14,6 +14,8 @@
 # shellcheck disable=SC2155
 
 
+export GSH_WORKING_DIR=$(pwd -P)
+
 export GSH_ROOT="$(dirname "$0")"
 # shellcheck source=scripts/gsh_gettext.sh
 . "$GSH_ROOT/scripts/gsh_gettext.sh"
@@ -27,12 +29,37 @@ display_help() {
 }
 
 
+# possible values: index, simple (default), overwrite
+export GSH_SAVEFILE_MODE="simple"
+export GSH_AUTOSAVE=1
 export GSH_COLOR="OK"
 GSH_MODE="ANONYMOUS"
+# if GSH_NO_GETTEXT is non-empty, gettext won't be used anywhere, the only language will thus be English
+# export GSH_NO_GETTEXT=1  # DO NOT CHANGE OR REMOVE THIS LINE, it is used by utils/archive.sh
 RESET=""
-while getopts ":hnPdDACRXqL:KBZc:" opt
+# hack to parse long options --index-savefiles --overwrite-savefiles --simple-savefiles
+# cf https://stackoverflow.com/questions/402377/using-getopts-to-process-long-and-short-command-line-options
+_long_option=0
+while getopts ":hnPdDACRXUVqGL:KBZc:F-:" opt
 do
+  if [ "$opt" = "-" ]
+  then
+    opt="${OPTARG%%=*}"       # extract long option name
+    OPTARG="${OPTARG#$opt}"   # extract long option argument (may be empty)
+    OPTARG="${OPTARG#=}"      # if long option argument, remove assigning `=`
+    _long_option=1
+  fi
+
   case $opt in
+    index-savefiles)
+      GSH_SAVEFILE_MODE=index
+      ;;
+    simple-savefiles)
+      GSH_SAVEFILE_MODE=simple
+      ;;
+    overwrite-savefiles)
+      GSH_SAVEFILE_MODE=overwrite
+      ;;
     h)
       display_help
       exit 0
@@ -65,9 +92,24 @@ do
     L)
       export LANGUAGE="$OPTARG"     # only works on GNU systems
       ;;
-    X)
+    G)
+      export GSH_NO_GETTEXT=1
+      ;;
+    X | U)
       echo "$(gettext "Error: this option is only available from an executable archive!")" >&2
       exit 1
+      ;;
+    V)
+      # when lib/header.sh sees the -V flag, it displays the version and exits,
+      # so the next case isn't used.
+      # this is only used when running GameShell directly from start.sh
+      if git rev-parse --is-inside-work-tree >/dev/null 2>&1
+      then
+        echo "GameShell $(git describe --always --tags --dirty)"
+      fi
+
+      echo "run directly from start.sh"
+      exit 0;
       ;;
     B)
       export GSH_SHELL=bash
@@ -78,10 +120,14 @@ do
     c)
       GSH_COMMAND=$OPTARG
       ;;
-    K)
+    K|F)
       :  # used by the self-extracting archive
       ;;
     *)
+      if [ "$_long_option" = "1" ]
+      then
+        OPTARG="-$opt"
+      fi
       echo "$(eval_gettext "Error: invalid option: '-\$OPTARG'")" >&2
       exit 1
       ;;
@@ -89,7 +135,7 @@ do
 done
 shift $((OPTIND - 1))
 
-if [ $(id -u) = 0 ]
+if [ $(id -u) -eq 0 ]
 then
   echo "$(gettext "Error: you shouldn't run Gameshell as root!")" >&2
   exit 1
@@ -468,7 +514,19 @@ cd "$GSH_HOME"
 export GSH_UID=$(cat "$GSH_CONFIG/uid")
 date "+%Y-%m-%d %H:%M:%S" | sed 's/^/#>>> /' >> "$GSH_CONFIG/missions.log"
 
-# make sure the shell reads its config file by making it interactive (-i)
+# put a ".save" file to indicate the archive needs to be saved on exit
+touch "$GSH_ROOT/.save"
+
+# if the user uses a special TERMINFO entry, it might not be found because
+# GameShell redefines HOME
+if [ -z "$TERMINFO" ]
+then
+  export TERMINFO=$REAL_HOME/.terminfo
+else
+  # this might be run with sh, which doesn't have variable string substitution
+  TERMINFO=$(echo "$TERMINFO" | sed -e "s#~#$REAL_HOME#g")
+fi
+
 generate_rcfile
 if [ -n "$GSH_COMMAND" ]
 then
@@ -494,12 +552,15 @@ then
       RC_FILE=.zshrc
       ;;
   esac
+
+  # start GameShell
   exec $GSH_SHELL -c "export GSH_NON_INTERACTIVE=1
                        GSH_ROOT=\"$GSH_ROOT\"
                        . \"\$GSH_ROOT/lib/profile.sh\"
                        . \"\$GSH_HOME/$RC_FILE\"
                        $GSH_COMMAND"
 else
+  # start GameShell
   exec $GSH_SHELL
 fi
 
